@@ -1,4 +1,4 @@
-#import numpy as np
+
 import math
 import matplotlib.pyplot as plt
 
@@ -7,12 +7,10 @@ A = 5
 n= 52
 Vf= 373.79
 
-#i_vals = np.linspace(0.001, 0.20, 400)
-
 def interes_compuesto(i, V0, A, n, Vf):
     return V0 * (1 + i)**n + A * (((1 + i)**n - (1 + i)) / i) - Vf
 
-#ffsgsdf
+
 
 def secante(f, p0, p1, TOL, N0):
     q0 = f(p0)
@@ -30,10 +28,7 @@ def secante(f, p0, p1, TOL, N0):
         p1, q1 = p, f(p)
     return None
     
-
-
-
-    
+entrada=input("Ingrese el tipo de interes (semanal, mensual, bimestral, trimestral): ")
 if entrada=="semanal":
     i=secante(interes_compuesto,0.01,0.02,10**-3,15)
     i_anual=i*52
@@ -60,7 +55,7 @@ plt.figure(figsize=(10,6))
 
 plt.plot(i_vals, f_vals, linewidth=2, color="blue", label="f(i)")
 
-plt.axhline(0, color="black", linestyle="--")  # línea para ver cruce con el eje
+plt.axhline(0, color="black", linestyle="--") 
 plt.title("Gráfica de la función f(i)")
 plt.xlabel("i (tasa por período)")
 plt.ylabel("f(i)")
