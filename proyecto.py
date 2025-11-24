@@ -1,8 +1,6 @@
-# simulador_interes_secante_gui_with_table_final.py
 import tkinter as tk
 from tkinter import ttk, messagebox, filedialog
 import math
-import csv
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
@@ -56,7 +54,7 @@ class SimuladorApp(tk.Tk):
         super().__init__()
         self.title("Simulador de Interés (Secante)")
         self.geometry("1000x640")
-        self.configure(bg="#FFB7C5")
+        self.configure(bg="#E594EE")
 
         self.freq_map = {
             "diaria": 365,
@@ -70,48 +68,47 @@ class SimuladorApp(tk.Tk):
         self._build_ui()
 
     def _build_ui(self):
-        left = tk.Frame(self, bg="#e6f2ff", bd=0)
+        left = tk.Frame(self, bg="#f7a4ff", bd=0)
         left.place(x=12, y=12, width=340, height=616)
 
         title = tk.Label(left, text="Simulador de Ahorro", font=("Segoe UI", 16, "bold"),
-                         bg="#e6f2ff", fg="#DB7093")
+                         bg="#f7a4ff", fg="#FFFFFF")
         title.pack(pady=(12,6))
 
         
-        self.entry_V0 = self._labeled_entry(left, "Depósito inicial (V0):", "100")
-        self.entry_A = self._labeled_entry(left, "Aporte periódico (A):", "5")
-        self.entry_n = self._labeled_entry(left, "Número de periodos (n):", "52")
-        self.entry_Vf = self._labeled_entry(left, "Valor final deseado (Vf):", "373.79")
+        self.entry_V0 = self._labeled_entry(left, "Depósito inicial (V0):", "")
+        self.entry_A = self._labeled_entry(left, "Aporte periódico (A):", "")
+        self.entry_n = self._labeled_entry(left, "Número de periodos (n):", "")
+        self.entry_Vf = self._labeled_entry(left, "Valor final deseado (Vf):", "")
 
     
-        lbl_freq = tk.Label(left, text="Periodo de aportes:", bg="#e6f2ff")
+        lbl_freq = tk.Label(left, text="Periodo de aportes:", bg="#f7a4ff")
         lbl_freq.pack(pady=(6,0))
         self.freq_var = tk.StringVar(value="semanal")
         freq_combo = ttk.Combobox(left, textvariable=self.freq_var, values=list(self.freq_map.keys()), state="readonly")
         freq_combo.pack(pady=4)
 
     
-        btn_frame = tk.Frame(left, bg="#e6f2ff")
+        btn_frame = tk.Frame(left, bg="#f7a4ff")
         btn_frame.pack(pady=10)
-        calc_btn = tk.Button(btn_frame, text="ñCalcular", bg="#C74375", fg="white",
+        calc_btn = tk.Button(btn_frame, text="Calcular", bg="#FA5D9A", fg="white",
                              relief="flat", command=self.on_calcular)
         calc_btn.grid(row=0, column=0, padx=6)
         clear_btn = tk.Button(btn_frame, text="Limpiar", bg="#FF00FF", fg="white",
                               relief="flat", command=self.on_limpiar)
         clear_btn.grid(row=0, column=1, padx=6)
         
-        self.lbl_i_periodo = tk.Label(left, text="Tasa por periodo: -", bg="#e6f2ff")
+        self.lbl_i_periodo = tk.Label(left, text="Tasa por periodo: ", bg="#ffffff")
         self.lbl_i_periodo.pack(pady=(12,0))
-        self.lbl_i_nominal = tk.Label(left, text="Tasa nominal anual (i*factor): -", bg="#e6f2ff")
+        self.lbl_i_nominal = tk.Label(left, text="Tasa nominal anual: ", bg="#ffffff")
         self.lbl_i_nominal.pack()
-        self.lbl_i_effective = tk.Label(left, text="Tasa efectiva anual (1+i)^m - 1: -", bg="#e6f2ff")
-        self.lbl_i_effective.pack()
+     
 
         
         right = tk.Frame(self, bg="#ffffff", bd=0)
         right.place(x=364, y=12, width=624, height=616)
 
-        hdr = tk.Label(right, text="Tabla de evolución", bg="#ffffff", font=("Segoe UI", 12, "bold"))
+        hdr = tk.Label(right, text="Tabla de evolución", bg="#f7a4ff", font=("Segoe UI", 12, "bold"))
         hdr.pack(anchor="nw", padx=12, pady=(8,0))
 
         
@@ -127,7 +124,7 @@ class SimuladorApp(tk.Tk):
         self.tree.pack(anchor="nw", padx=12, pady=(4,8), fill="x")
 
 
-        plot_frame = tk.Frame(right, bg="#ffffff")
+        plot_frame = tk.Frame(right, bg="#FF8CC6")
         plot_frame.pack(fill="both", expand=True, padx=12, pady=8)
         self.fig = plt.Figure(figsize=(6,4), dpi=100)
         self.ax = self.fig.add_subplot(111)
@@ -156,26 +153,9 @@ class SimuladorApp(tk.Tk):
         self.ax.set_xlabel("Periodo")
         self.ax.set_ylabel("Saldo")
         self.canvas.draw()
-        self.lbl_i_periodo.config(text="Tasa por periodo: -")
-        self.lbl_i_nominal.config(text="Tasa nominal anual (i*factor): -")
-        self.lbl_i_effective.config(text="Tasa efectiva anual (1+i)^m - 1: -")
+        self.lbl_i_periodo.config(text="Tasa por periodo: ")
+        self.lbl_i_nominal.config(text="Tasa nominal anual: ")
         self._last_series = None
-
-    def export_csv(self):
-        if not hasattr(self, "_last_series") or self._last_series is None:
-            messagebox.showinfo("Exportar", "No hay datos para exportar.")
-            return
-
-        first_col_name = self._period_name_for(self.freq_var.get())
-        file = filedialog.asksaveasfilename(defaultextension=".csv", filetypes=[("CSV files","*.csv")])
-        if not file:
-            return
-        with open(file, "w", newline="", encoding="utf-8") as f:
-            writer = csv.writer(f)
-            writer.writerow([first_col_name, "Aporte ($)", "Capital ($)", "Ganancia ($)", "Total ($)"])
-            for periodo, aporte, capital, ganancia, total in self._last_series:
-                writer.writerow([periodo, f"{aporte:.2f}", f"{capital:.2f}", f"{ganancia:.2f}", f"{total:.2f}"])
-        messagebox.showinfo("Exportar", f"Datos exportados a:\n{file}")
 
     def _period_name_for(self, key):
         return {
@@ -195,6 +175,22 @@ class SimuladorApp(tk.Tk):
             Vf = float(self.entry_Vf.get())
         except Exception:
             messagebox.showerror("Error", "Ingresa valores numéricos válidos.")
+            return
+        if V0 <= 0 or A <= 0 or n <= 0 or Vf <= 0:
+            messagebox.showerror(
+            "Error en los datos",
+            "No se permiten valores negativos en los campos.\n"
+            "Todos los valores deben ser mayores o iguales a cero."
+            )
+            return
+        
+        minimo_posible = V0 + A * n
+        if Vf < minimo_posible:
+            messagebox.showerror(
+            "Error en los datos",
+            f"El valor final ingresado ({Vf}) es menor que la suma mínima posible del ahorro ({minimo_posible}).\n"
+            "Aumente el valor final o revise los datos ingresados."
+        )
             return
 
         entrada = self.freq_var.get()
@@ -223,12 +219,11 @@ class SimuladorApp(tk.Tk):
         else:
             i_anual_nominal = i_root * self.freq_map[entrada]
 
-        periods_per_year = self.freq_map[entrada]
-        i_anual_efectiva = (1 + i_root)**periods_per_year - 1
+      
 
         self.lbl_i_periodo.config(text=f"Tasa por periodo: {i_root:.10f}  ({i_root*100:.6f}% por periodo)")
-        self.lbl_i_nominal.config(text=f"Tasa nominal anual (i*m): {i_anual_nominal*100:.6f}%")
-        self.lbl_i_effective.config(text=f"Tasa efectiva anual: {i_anual_efectiva*100:.6f}%  (m={periods_per_year})")
+        self.lbl_i_nominal.config(text=f"Tasa nominal anual : {i_anual_nominal*100:.6f}%")
+        
 
 
         serie_det = generar_serie_detallada(i_root, V0, A, n)
